@@ -46,24 +46,16 @@ void scan(int n, int *h_in, int *h_out){
     int numBlocks = (n + blockSize - 1) / blockSize;
     int *temp;
     cudaMallocManaged(&temp, numBlocks*sizeof(int));
-    int *temp2;
-    cudaMallocManaged(&temp2, numBlocks*sizeof(int));
-    int *h_temp;
-    cudaMallocManaged(&h_temp, n*sizeof(int));
 
-    scan<<<numBlocks, blockSize, blockSize*sizeof(int)>>>(n, h_in, h_temp, temp);
+    scan<<<numBlocks, blockSize, blockSize*sizeof(int)>>>(n, h_in, h_out, temp);
     cudaDeviceSynchronize();
     if (numBlocks > 1){
-        scan(numBlocks, temp, temp2);
-        add<<<numBlocks, blockSize>>>(n, h_temp, h_out, temp2);
-    } else {
-        add<<<numBlocks, blockSize>>>(n, h_temp, h_out, temp);
+        scan(numBlocks, temp, temp);
     }
+    add<<<numBlocks, blockSize>>>(n, h_out, h_out, temp);
     cudaDeviceSynchronize();
 
     cudaFree(temp);
-    cudaFree(temp2);
-    cudaFree(h_temp);
 }
 
 int main(){
