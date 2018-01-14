@@ -1,11 +1,12 @@
 #include <iostream>
 #include <math.h>
 #include <ctime>
+#include <algorithm>
 
 __global__ void scan(int n, int *d_in, int *d_out, int *d_temp){
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     int id = threadIdx.x;
-    int m = blockDim.x;
+    int m = min(n, blockDim.x);
 
     extern __shared__ int sdata[];
     sdata[id] = d_in[index];
@@ -42,7 +43,7 @@ __global__ void add(int n, int *d_in, int *d_out, int *d_temp){
 }
 
 void scan(int n, int *h_in, int *h_out){
-    int blockSize = 512;
+    int blockSize = min(n, 512);
     int numBlocks = (n + blockSize - 1) / blockSize;
     int *temp;
     cudaMallocManaged(&temp, numBlocks*sizeof(int));
